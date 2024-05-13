@@ -15,6 +15,10 @@ namespace Application
             members = new Member[MaxMembers];
             count = 0;
         }
+        public int Count
+        {
+            get { return count; }
+        }
         public bool AddMember(Member member)
         {
             if (count >= members.Length)
@@ -37,11 +41,11 @@ namespace Application
             count++;
             return true;
         }
-        public bool RemoveMember(string contactNumber)
+        public bool RemoveMember(Member member)
         {
             for (int i = 0; i < count; i++)
             {
-                if (members[i].ContactNumber == contactNumber)
+                if (members[i].FirstName == member.FirstName && members[i].LastName == member.LastName)
                 {
                     // Shift elements to fill the gap
                     for (int j = i; j < count - 1; j++)
@@ -56,11 +60,11 @@ namespace Application
             return false; // Member not found
         }
 
-        public Member FindMember(string contactNumber)
+        public Member FindMember(string firstName, string lastName)
         {
             for (int i = 0; i < count; i++)
             {
-                if (members[i].ContactNumber == contactNumber)
+                if (members[i].FirstName == firstName && members[i].LastName == lastName)
                 {
                     return members[i];
                 }
@@ -89,6 +93,17 @@ namespace Application
                 }
             }
             return null; // Member not found
+        }
+        public Member GetMemberAtIndex(int index)
+        {
+            if (index >= 0 && index < count)
+            {
+                return members[index];
+            }
+            else
+            {
+                return null; // Invalid index
+            }
         }
     }
 }

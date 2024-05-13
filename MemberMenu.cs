@@ -8,11 +8,15 @@ namespace N11422807
     {
         public int Option { get; set; }
         private MovieCollection movieCollection;
-        public MemberMenu(MovieCollection movieCollection)
+        private MemberCollection memberCollection;
+        private Member member;
+
+        public MemberMenu(MovieCollection movieCollection, MemberCollection memberCollection,Member member)
         {
             this.movieCollection = movieCollection;
+            this.memberCollection = memberCollection;
+            this.member = member; 
         }
-
         public int DisplayMemberMenu()
         {
             bool isExecute = true;
@@ -39,49 +43,158 @@ namespace N11422807
                         isExecute = false;
                         break;
                     case 1:
-                        WriteLine("Browsing all the movies...");
+                        WriteLine("Browsing all the movies...\n");
+                        // Header
+                        WriteLine("{0,-20} {1,-15} {2,-15} {3,-10} {4,-10}", "Title", "Genre", "Classification", "Duration", "Available Quantity");
+                        WriteLine("----------------------------------------------------------------------------------");
+                        // Get all movies
                         Movie[] allMovies = movieCollection.GetAllMovies();
+                        // Display movie info
                         foreach (Movie movie in allMovies)
                         {
                             if (movie != null)
                             {
-                                WriteLine($"Title: {movie.Title}, Genre: {movie.Genre}, Duration: {movie.Duration}, Quantity: {movie.Quantity}");
+                                WriteLine("{0,-20} {1,-15} {2,-15} {3,-10} {4,-10}", movie.Title, movie.Genre, movie.Classification, movie.Duration, movie.Quantity);
                             }
                         }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;
                     case 2:
-                        WriteLine("Enter the title of the movie: ");
+                        // Display information about a movie
+                        Write("Enter the title of the movie: ");
                         string titleToFind = ReadLine();
                         Movie foundMovie = movieCollection.GetMovie(titleToFind);
                         if (foundMovie != null)
                         {
-                            WriteLine($"Found movie:\n Title: {foundMovie.Title}, Genre: {foundMovie.Genre}, Classification: {foundMovie.Classification}, Duration: {foundMovie.Duration}");
+                            // Header
+                            WriteLine("{0,-20} {1,-15} {2,-15} {3,-10} {4,-10}", "Title", "Genre", "Classification", "Duration", "Available Quantity");
+                            WriteLine("----------------------------------------------------------------------------------");
+
+                            // Display movie info
+                            WriteLine("{0,-20} {1,-15} {2,-15} {3,-10} {4,-10}", foundMovie.Title, foundMovie.Genre, foundMovie.Classification, foundMovie.Duration, foundMovie.Quantity);
                         }
                         else
                         {
-                            WriteLine("Movie not found. Press Enter to return to the staff menu");
+                            WriteLine("Movie not found.");
                         }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;
                     case 3:
-                        // Implement logic for borrowing a movie DVD
                         WriteLine("Borrowing a movie DVD...");
+                        Write("Enter the title of the movie you want to borrow: ");
+                        string title = ReadLine();
+                        // Get the movie from the collection
+                        Movie movieToBorrow = movieCollection.GetMovie(title);
+                        if (movieToBorrow != null)
+                        {
+                            // Attempt to borrow the movie
+                            member.BorrowMovie(movieToBorrow);
+                        }
+                        else
+                        {
+                            WriteLine($"Sorry, '{title}' is not found in the library.");
+                        }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;
                     case 4:
-                        // Implement logic for returning a movie DVD
                         WriteLine("Returning a movie DVD...");
+                        Write("Enter the title of the movie you are returning:");
+                        string movieTitle = ReadLine();
+                        // Find the member in the collection
+                        Member foundMember = memberCollection.FindMember(member.FirstName, member.LastName);
+                        if (foundMember != null)
+                        {
+                            bool movieReturned = false;
+                            for (int i = 0; i < foundMember.BorrowingCount; i++)
+                            {
+                                if (foundMember.BorrowingHistory[i] != null && foundMember.BorrowingHistory[i].MovieTitle == movieTitle)
+                                {
+                                    // Get the returned movie directly from the movie collection
+                                    Movie returnedMovie = movieCollection.GetMovie(foundMember.BorrowingHistory[i].MovieTitle);
+                                    if (returnedMovie != null)
+                                    {
+                                        WriteLine("The movie you want to return is: ");
+                                        WriteLine(returnedMovie);
+                                        // Update movie availability
+                                        returnedMovie.Quantity++;
+                                        // Remove the movie from the member's borrowing history
+                                        foundMember.BorrowingHistory[i] = null;
+                                        foundMember.BorrowingCount--;
+
+                                        WriteLine($"Successfully returned '{movieTitle}'. Thank you!");
+                                        movieReturned = true;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        WriteLine($"Error: Returned movie is null.");
+                                    }
+                                }
+                            }
+                            if (!movieReturned)
+                            {
+                                WriteLine($"You have not borrowed '{movieTitle}'.");
+                            }
+                        }
+                        else
+                        {
+                            WriteLine("Member not found.");
+                        }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;
                     case 5:
-                        // Implement logic for listing current borrowing movies
                         WriteLine("Listing current borrowing movies...");
+                        member = memberCollection.FindMember(member.FirstName, member.LastName);
+                        if (member != null)
+                        {
+                            WriteLine("Current borrowed movies:");
+                            WriteLine("-----------------------------------------------------------------------------------------------");
+                            WriteLine("|   No.   |           Title            |       Genre        |  Classification  |   Duration   |");
+                            WriteLine("-----------------------------------------------------------------------------------------------");
+                            for (int i = 0; i < member.BorrowingCount; i++)
+                            {
+                                if (member.BorrowingHistory[i] != null)
+                                {
+                                    Movie borrowedMovie = movieCollection.GetMovie(member.BorrowingHistory[i].MovieTitle);
+                                    if (borrowedMovie != null)
+                                    {
+                                        WriteLine($"|  {i + 1,-5}  |  {borrowedMovie.Title,-24}  |  {borrowedMovie.Genre,-16}  |  {borrowedMovie.Classification,-14}  |  {borrowedMovie.Duration,-10}  |");
+                                    }
+                                }
+                            }
+                            WriteLine("-----------------------------------------------------------------------------------------------");
+                        }
+                        else
+                        {
+                            WriteLine("Member not found.");
+                        }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;
-                    case 6:
-                        // Implement logic for displaying the top 3 movies rented by the members
+                    case 6: //Todo
+                        // Display the top 3 movies rented by the members
                         WriteLine("Displaying the top 3 movies rented by the members...");
+                        Movie[] topThreeMovies = movieCollection.GetTopThreeMovies();
+
+                        WriteLine("Top 3 movies rented by members:");
+                        for (int i = 0; i < topThreeMovies.Length; i++)
+                        {
+                            if (topThreeMovies[i] != null)
+                            {
+                                WriteLine($"{i + 1}. {topThreeMovies[i].Title}");
+                            }
+                        }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;
                     default:
@@ -89,8 +202,8 @@ namespace N11422807
                         break;
                 }
             }
-            return Option;        }
-
+            return Option;
+        }
         private int GetOption(int maxOption)
         {
             int input;

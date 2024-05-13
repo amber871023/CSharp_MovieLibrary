@@ -7,10 +7,13 @@ public class Menu
 {
     public int Option { get; set; }
     private MovieCollection movieCollection;
+    private MemberCollection memberCollection;
+    private Member GetMember;
 
-    public Menu(MovieCollection movieCollection)
+    public Menu(MovieCollection movieCollection, MemberCollection memberCollection)
     {
         this.movieCollection = movieCollection;
+        this.memberCollection = memberCollection;
     }
 
 
@@ -32,7 +35,7 @@ public class Menu
             string storedUsername = "staff";
             string storedPassword = "today123";
             Write("Enter username:");
-            string username = ReadLine();
+            string username = ReadLine().Trim();
             Write("Enter password:");
             string password = ReadPassword();
             if (username == storedUsername && password == storedPassword)
@@ -48,12 +51,8 @@ public class Menu
         }
         else if (option == 2) // Member login
         {
-            MemberCollection memberCollection = new MemberCollection();
-            Member testMember = new Member("amber", "cheng", "12345", "1234");
-            memberCollection.AddMember(testMember);
-
             Write("Enter first name:");
-            string firstName = ReadLine();
+            string firstName = ReadLine().Trim();
             Write("Enter last name:");
             string lastName = ReadLine();
             Write("Enter password:");
@@ -61,6 +60,8 @@ public class Menu
             // Check if the member exists and the password is correct
             if (memberCollection.MemberExists(firstName,lastName) && password == memberCollection.GetMemberPassword(firstName,lastName))
             {
+                Member loggedInMember = memberCollection.FindMember(firstName, lastName);
+                GetMember = loggedInMember;
                 return true; // Member exists and password is correct, login successful
             }
             else
@@ -125,7 +126,7 @@ public class Menu
                     if (Login(1))
                     {
                         // Display staff menu
-                        StaffMenu staffMenu = new StaffMenu(movieCollection);
+                        StaffMenu staffMenu = new StaffMenu(movieCollection, memberCollection);
                         staffMenu.DisplayStaffMenu();
                     }
                     else
@@ -137,8 +138,8 @@ public class Menu
                     // Member login
                     if (Login(2))
                     {
+                        MemberMenu memberMenu = new MemberMenu(movieCollection, memberCollection, GetMember);
                         // Display member menu
-                        MemberMenu memberMenu = new MemberMenu(movieCollection);
                         memberMenu.DisplayMemberMenu();
                     }
                     else

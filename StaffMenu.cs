@@ -9,10 +9,12 @@ namespace N11422807
         public int Option { get; set; }
         private MovieCollection movieCollection;
         private MemberCollection memberCollection;
-        public StaffMenu(MovieCollection movieCollection)
+        private Member member;
+
+        public StaffMenu(MovieCollection movieCollection, MemberCollection memberCollection)
         {
             this.movieCollection = movieCollection;
-            memberCollection = new MemberCollection();
+            this.memberCollection = memberCollection;
         }
         private int GetOption(int maxOption)
         {
@@ -24,7 +26,6 @@ namespace N11422807
             }
             return input;
         }
-
         public int DisplayStaffMenu()
         {
             bool isExecute = true;
@@ -52,33 +53,44 @@ namespace N11422807
                         break;
                     case 1:
                         WriteLine("Adding Movies(DVDs)");
-                        Write("Enter movie title: ");
+                        Write("Enter movie title (enter 'q' to quit): ");
                         string title = ReadLine();
+                        if (title.ToLower() == "q") break; // Exit if 'q' is entered
+
                         string genre = GetValidGenre();  // Get valid genre
+                        if (genre.ToLower() == "q") break; // Exit if 'q' is entered
+
                         string classification = GetValidClassification();  // Get valid classification
-                        Write("Enter movie duration: ");
+                        if (classification.ToLower() == "q") break; // Exit if 'q' is entered
+
+                        Write("Enter movie duration (enter 'q' to quit): ");
                         double duration;
+                        string durationInput = ReadLine();
+                        if (durationInput.ToLower() == "q") break; // Exit if 'q' is entered
 
-                        while (!double.TryParse(ReadLine(), out duration) || duration <= 0)
+                        while (!double.TryParse(durationInput, out duration) || duration <= 0)
                         {
-                            WriteLine("Invalid duration. Please enter a positive number.");
+                            WriteLine("Invalid duration. Please enter a positive number (enter 'q' to quit).");
                             Write("Enter movie duration: ");
+                            durationInput = ReadLine();
+                            if (durationInput.ToLower() == "q") break; // Exit if 'q' is entered
                         }
-                        Movie newMovie = new Movie(title, genre, classification, duration);
-                        bool added = movieCollection.AddMovie(newMovie, 1);
-
-                        if (added)
+                        // Check if the user entered 'q' during duration input
+                        if (durationInput.ToLower() != "q")
                         {
-                            WriteLine("Movie added successfully.");
+                            Movie newMovie = new Movie(title, genre, classification, duration);
+                            bool isAdded = movieCollection.AddMovie(newMovie, 1);
+                            if (isAdded)
+                            {
+                                WriteLine("Movie added successfully.");
+                            }
+                            else
+                            {
+                                WriteLine("Failed to add movie. The movie may already exist or the collection may be full.");
+                            }
                         }
-                        else
-                        {
-                            WriteLine("Failed to add movie. The movie may already exist or the collection may be full.");
-                        }
-                        // wait for user input before continuing
                         ReadLine();
                         break;
-
                     case 2:
                         WriteLine("Enter the title of the movie to remove: ");
                         string titleToRemove = ReadLine();
@@ -145,7 +157,7 @@ namespace N11422807
                             continue;
                         }
                         Member newMember = new Member(firstName, lastName, phoneNo, password);
-                        added = memberCollection.AddMember(newMember);
+                        bool added = memberCollection.AddMember(newMember);
                         if (added)
                         {
                             WriteLine("Member registered successfully.");
@@ -157,38 +169,89 @@ namespace N11422807
                         ReadLine();
                         break;
                     case 4:
-                        // Implement logic for removing a registered member from the system
-                        WriteLine("Removing a registered member from the system...");
-                        ReadLine();
-                        break;
-                    case 5:
-                        // Implement logic for finding a member's contact phone number
-                        WriteLine("Enter the contact number of the member to find: ");
-                        string contactNumberToFind = ReadLine();
-                        Member foundMember = memberCollection.FindMember(contactNumberToFind);
-                        if (foundMember != null)
+                        Write("Enter first name:");
+                        firstName = ReadLine();
+                        Write("Enter last name:");
+                        lastName = ReadLine();
+                        Member memberToRemove = memberCollection.FindMember(firstName, lastName);
+                        if (memberToRemove != null)
                         {
-                            WriteLine($"Found member:\n {foundMember.FirstName} {foundMember.LastName}, Contact Number: {foundMember.ContactNumber}");
+                            bool hasBorrowed = false;
+                            foreach (BorrowingRecord record in memberToRemove.BorrowingHistory)
+                            {
+                                if (record != null)
+                                {
+                                    hasBorrowed = true;
+                                    break;
+                                }
+                            }
+                            if (hasBorrowed)
+                            {
+                                WriteLine("This member is currently holding some DVDs.\n They must return all DVDs before they can be removed from the system. \nPress Enter to return to the staff menu");
+                            }
+                            else
+                            {
+                                memberCollection.RemoveMember(memberToRemove);
+                                WriteLine($"Member {memberToRemove}has been successfully removed. \nPress Enter to return to the staff menu");
+                            }
                         }
                         else
                         {
-                            WriteLine("Member not found. Press Enter to return to the staff menu");
+                            WriteLine("Member not found.");
                         }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the staff menu");
+                        ReadLine();
+                        break;
+                    case 5:
+                        Write("Enter first name:");
+                        firstName = ReadLine();
+                        Write("Enter last name:");
+                        lastName = ReadLine();
+                        Member foundMemberPhone = memberCollection.FindMember(firstName, lastName);
+                        if (foundMemberPhone != null)
+                        {
+                            WriteLine($"Found member:\n {firstName} {lastName}, Contact Number: {foundMemberPhone.ContactNumber}");
+                        }
+                        else
+                        {
+                            WriteLine("Member not found.");
+                        }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the staff menu");
                         ReadLine();
                         break;
                     case 6:
-                        // Implement logic for finding members who are currently renting a particular movie
-                        WriteLine("Finding members who are currently renting a particular movie...");
+                        WriteLine("Enter the title of the movie:");
+                        string movieTitle = ReadLine();
+                        WriteLine($"Finding members who are currently renting '{movieTitle}'...");
+
+                        bool found = false;
+                        for (int i = 0; i < memberCollection.Count; i++)
+                        {
+                            Member member = memberCollection.GetMemberAtIndex(i);
+                            foreach (BorrowingRecord record in member.BorrowingHistory)
+                            {
+                                if (record != null && record.MovieTitle == movieTitle)
+                                {
+                                    WriteLine($"{member.FirstName} {member.LastName} is currently renting '{movieTitle}'");
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!found)
+                        {
+                            WriteLine("No members found who are currently renting this movie.");
+                        }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the staff menu");
                         ReadLine();
-                        break;
-                    default:
-                        WriteLine("Invalid choice. Please try again.");
                         break;
                 }
             }
             return Option;
         }
-
         public string ReadPassword()
         {
             string password = "";
@@ -213,32 +276,33 @@ namespace N11422807
                 }
             }
         }
-        // Define valid genre options
-        private string[] validGenres= { "drama", "adventure", "family", "action", "sci-fi", "comedy", "animated", "thriller", "Other" };
+        private string[] validGenres = { "drama", "adventure", "family", "action", "sci-fi", "comedy", "animated", "thriller", "Other" };
         private string GetValidGenre()
         {
-            WriteLine($"Enter movie genre{{{string.Join(", ", validGenres)}}}: ");
-            string genre = ReadLine().ToLower();
-            while (!validGenres.Contains(genre))
+            WriteLine($"Enter movie genre{{{string.Join(", ", validGenres)}}} or (enter 'q' to quit): ");
+            string genre = ReadLine()?.ToLower(); // Added null-conditional operator to handle null input
+            while (true)
             {
-                WriteLine("Invalid genre. Please enter a valid genre.");
+                if (genre == "q") break; // Exit loop if 'q' is entered
+                if (validGenres.Contains(genre)) break; // Exit loop if a valid genre is entered
+                WriteLine("Invalid genre. Please enter a valid genre or 'q' to quit.");
                 Write("Enter movie genre: ");
-                genre = ReadLine().ToLower();
+                genre = ReadLine()?.ToLower(); // Added null-conditional operator to handle null input
             }
             return genre;
         }
-        // Define valid classification options
         private string[] validClassifications = { "G", "PG", "M15+", "MA15+" };
         private string GetValidClassification()
         {
-            WriteLine("Enter movie classification G (genreGeneral), PG (Parental Guidance), M15+ (Mature), or MA15+(Mature Accompanied): ");
-
-            string classification = ReadLine().ToUpper();
-            while (!validClassifications.Contains(classification))
+            WriteLine($"Enter movie classification{{{string.Join(", ", validClassifications)}}} or (enter 'q' to quit): ");
+            string classification;
+            classification = ReadLine()?.ToUpper(); // Added null-conditional operator to handle null input
+            while (true)
             {
-                WriteLine("Invalid classification. Please enter a valid classification.");
+                if (classification == "Q") return "q"; // Exit loop if 'q' is entered
+                if (validClassifications.Contains(classification)) break; // Exit loop if a valid classification is entered
+                WriteLine("Invalid classification. Please enter a valid classification or 'q' to quit.");
                 Write("Enter movie classification: ");
-                classification = ReadLine().ToUpper();
             }
             return classification;
         }

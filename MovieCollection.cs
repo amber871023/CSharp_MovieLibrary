@@ -79,7 +79,6 @@ namespace N11422807
                     }
                     return movies[index]?.Quantity ?? 0;
                 }
-
                 index = (index + 1) % MaxMovies;
                 if (index == probedIndex) // Reached starting index, no movie found
                 {
@@ -106,7 +105,6 @@ namespace N11422807
                     return null;
                 }
             }
-
             return null; // Movie not found
         }
 
@@ -176,6 +174,56 @@ namespace N11422807
                 WriteLine($"Sorry, '{title}' is not available for borrowing.");
                 return false;
             }
+        }
+        public Movie[] GetTopThreeMovies() //TODO
+        {
+            // Array to store borrowing frequencies of each movie
+            int[] borrowingFrequencies = new int[movies.Length];
+
+            // Compute borrowing frequency for each movie
+            for (int i = 0; i < movies.Length; i++)
+            {
+                if (movies[i] != null)
+                {
+                    string title = movies[i].Title;
+                    int frequency = 0;
+                    for (int j = 0; j < movies.Length; j++)
+                    {
+                        if (movies[j] != null && movies[j].Title == title)
+                        {
+                            frequency++;
+                        }
+                    }
+                    borrowingFrequencies[i] = frequency;
+                }
+            }
+
+            // Sort borrowing frequencies in descending order (using bubble sort)
+            for (int i = 0; i < borrowingFrequencies.Length - 1; i++)
+            {
+                for (int j = 0; j < borrowingFrequencies.Length - i - 1; j++)
+                {
+                    if (borrowingFrequencies[j] < borrowingFrequencies[j + 1])
+                    {
+                        // Swap borrowing frequencies
+                        int temp = borrowingFrequencies[j];
+                        borrowingFrequencies[j] = borrowingFrequencies[j + 1];
+                        borrowingFrequencies[j + 1] = temp;
+
+                        // Swap corresponding movies
+                        Movie tempMovie = movies[j];
+                        movies[j] = movies[j + 1];
+                        movies[j + 1] = tempMovie;
+                    }
+                }
+            }
+            // Get the top three movies
+            Movie[] topThreeMovies = new Movie[3];
+            for (int i = 0; i < Math.Min(3, movies.Length); i++)
+            {
+                topThreeMovies[i] = movies[i];
+            }
+            return topThreeMovies;
         }
     }
 }
