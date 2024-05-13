@@ -9,7 +9,6 @@ namespace N11422807
         public int Option { get; set; }
         private MovieCollection movieCollection;
         private MemberCollection memberCollection;
-        private Member member;
 
         public StaffMenu(MovieCollection movieCollection, MemberCollection memberCollection)
         {
@@ -52,6 +51,7 @@ namespace N11422807
                         isExecute = false;
                         break;
                     case 1:
+                        Clear();
                         WriteLine("Adding Movies(DVDs)");
                         Write("Enter movie title (enter 'q' to quit): ");
                         string title = ReadLine();
@@ -89,10 +89,12 @@ namespace N11422807
                                 WriteLine("Failed to add movie. The movie may already exist or the collection may be full.");
                             }
                         }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the staff menu");
                         ReadLine();
                         break;
                     case 2:
-                        WriteLine("Enter the title of the movie to remove: ");
+                        WriteLine("\nEnter the title of the movie to remove: ");
                         string titleToRemove = ReadLine();
                         WriteLine("Enter the number of copies to remove: ");
                         int numCopiesToRemove;
@@ -130,37 +132,45 @@ namespace N11422807
                                 isValid = false;
                             }
                         }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the staff menu");
                         ReadLine();
                         break;
-                    case 3: // Register a new member
+                    case 3:
+                        Clear();
+                        WriteLine("- Register a new member -");
                         Write("Enter your first name: ");
-                        string firstName = ReadLine();
+                        string firstName = ReadLine().Trim();
                         if (string.IsNullOrEmpty(firstName))
                         {
                             WriteLine("Invalid first name. Please try again.");
                             continue;
                         }
                         Write("Enter member last name: ");
-                        string lastName = ReadLine();
+                        string lastName = ReadLine().Trim();
                         if (string.IsNullOrEmpty(lastName))
                         {
                             WriteLine("Invalid last name. Please try again.");
                             continue;
                         }
                         Write("Enter your phone number: ");
-                        string phoneNo = ReadLine();
+                        string phoneNo = ReadLine().Trim();
                         if (string.IsNullOrEmpty(phoneNo))
                         {
                             WriteLine("Invalid phone number. Please try again.");
                             continue;
                         }
-                        Write("Enter a four-digit password: ");
-                        string password = ReadPassword();
-                        if (string.IsNullOrEmpty(password))
+                        string password;
+                        do
                         {
-                            WriteLine("Invalid password. Please try again.");
-                            continue;
-                        }
+                            Write("Enter a four-digit password: ");
+                            password = ReadPassword();
+                            if (string.IsNullOrEmpty(password) || !IsFourDigitPassword(password))
+                            {
+                                WriteLine("Invalid password. Please enter a four-digit number.");
+                            }
+                        } while (string.IsNullOrEmpty(password) || !IsFourDigitPassword(password));
+
                         Member newMember = new Member(firstName, lastName, phoneNo, password);
                         bool added = memberCollection.AddMember(newMember);
                         if (added)
@@ -171,13 +181,16 @@ namespace N11422807
                         {
                             WriteLine("Failed to register member. The member may already exist or the collection may be full.");
                         }
+                        WriteLine("\n----------------------------------------");
+                        WriteLine("Press Enter to return to the staff menu");
                         ReadLine();
                         break;
                     case 4:
+                        WriteLine("\n - Remove a member -");
                         Write("Enter first name:");
-                        firstName = ReadLine();
+                        firstName = ReadLine().Trim();
                         Write("Enter last name:");
-                        lastName = ReadLine();
+                        lastName = ReadLine().Trim();
                         Member memberToRemove = memberCollection.FindMember(firstName, lastName);
                         if (memberToRemove != null)
                         {
@@ -209,6 +222,7 @@ namespace N11422807
                         ReadLine();
                         break;
                     case 5:
+                        WriteLine("\nFind a member's contact phone number...");
                         Write("Enter first name:");
                         firstName = ReadLine();
                         Write("Enter last name:");
@@ -281,6 +295,11 @@ namespace N11422807
                 }
             }
         }
+        private bool IsFourDigitPassword(string password)
+        {
+            return password.Length == 4 && int.TryParse(password, out _);
+        }
+
         private string[] validGenres = { "drama", "adventure", "family", "action", "sci-fi", "comedy", "animated", "thriller", "Other" };
         private string GetValidGenre()
         {
