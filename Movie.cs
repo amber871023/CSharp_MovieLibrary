@@ -11,6 +11,7 @@ namespace N11422807
         public double Duration { get; set; }  // Duration in minutes
         public int Quantity { get; set; }  // Number of DVDs of the same movie title
         public bool IsAvailable { get; set; }
+        public int BorrowingFrequency { get; set; }
 
         public Movie(string title, string genre, string classification, double duration, int quantity = 1)
         {
@@ -20,7 +21,7 @@ namespace N11422807
             Duration = duration;
             Quantity = quantity;
             IsAvailable = true; // Initially, movie is available to borrow
-
+            BorrowingFrequency = 0; 
         }
 
         public override string ToString()

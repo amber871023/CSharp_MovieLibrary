@@ -35,13 +35,25 @@ namespace N11422807
             // Add initial movies
             AddMovie(new Movie("IFN664", "Drama", "G", 2.5));
             AddMovie(new Movie("IFN664", "Drama", "G", 2.5));
-            AddMovie(new Movie("IFN664", "Drama", "MG", 2.5));
+            AddMovie(new Movie("IFN664", "Drama", "G", 2.5));
             AddMovie(new Movie("IFN666", "Crime", "M15+", 3));
             AddMovie(new Movie("IFN711", "Action", "M15+", 5));
             AddMovie(new Movie("IFN711", "Action", "M15+", 5));
             AddMovie(new Movie("QUT", "Adventure", "MA15+", 10));
+            AddMovie(new Movie("Mission: Impossible", "Action", "PG", 2.5));
+            AddMovie(new Movie("Mission: Impossible 2", "Action", "PG", 2.5));
+            AddMovie(new Movie("Harry Potter", "fantasy", "PG", 2.5));
+            AddMovie(new Movie("Harry Potter", "fantasy", "PG", 2.5));
         }
-
+        private int GetHash(string title)
+        {
+            int hash = 0;
+            foreach (char c in title)
+            {
+                hash = (hash * 31) + c; // Using a prime number for better distribution
+            }
+            return Math.Abs(hash) % MaxMovies; // Ensure a positive index within the array bounds
+        }
         public bool AddMovie(Movie movie, int numCopies = 1)
         {
             int index = GetHash(movie.Title);
@@ -163,27 +175,62 @@ namespace N11422807
 
         public Movie[] GetTopThreeMovies()
         {
-            // Sort the movies by borrowing frequency
-            Array.Sort(movies, (movie1, movie2) =>
-            {
-                if (movie1 == null && movie2 == null) return 0;
-                if (movie1 == null) return 1;
-                if (movie2 == null) return -1;
-                return movie2.Quantity.CompareTo(movie1.Quantity); // Descending order
-            });
+            Movie[] allMovies = FlattenHashTable();
+            BubbleSortByBorrowingFrequency(allMovies);
 
+            // Filter out movies with borrowing frequency <= 0
+            allMovies = allMovies.Where(movie => movie.BorrowingFrequency > 0).ToArray();
             // Get the top three movies
-            return movies.Take(3).ToArray();
+            int length = Math.Min(3, allMovies.Length);
+            Movie[] topThreeMovies = new Movie[length];
+            Array.Copy(allMovies, topThreeMovies, length);
+            return topThreeMovies;
         }
 
-        private int GetHash(string title)
+        private Movie[] FlattenHashTable()
         {
-            int hash = 0;
-            foreach (char c in title)
+            // Flatten the hash table
+            int count = 0;
+            foreach (HashNode node in hashTable)
             {
-                hash = (hash * 31) + c; // Using a prime number for better distribution
+                HashNode current = node;
+                while (current != null)
+                {
+                    count++;
+                    current = current.Next;
+                }
             }
-            return Math.Abs(hash) % MaxMovies; // Ensure a positive index within the array bounds
+
+            Movie[] allMovies = new Movie[count];
+            int index = 0;
+            foreach (HashNode node in hashTable)
+            {
+                HashNode current = node;
+                while (current != null)
+                {
+                    allMovies[index++] = current.Movie;
+                    current = current.Next;
+                }
+            }
+            return allMovies;
+        }
+
+        private void BubbleSortByBorrowingFrequency(Movie[] movies)
+        {
+            int n = movies.Length;
+            for (int i = 0; i < n - 1; i++)
+            {
+                for (int j = 0; j < n - i - 1; j++)
+                {
+                    if (movies[j].BorrowingFrequency < movies[j + 1].BorrowingFrequency)
+                    {
+                        // Swap movies[j] and movies[j+1]
+                        Movie temp = movies[j];
+                        movies[j] = movies[j + 1];
+                        movies[j + 1] = temp;
+                    }
+                }
+            }
         }
     }
 }

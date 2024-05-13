@@ -34,7 +34,7 @@ namespace N11422807
                 WriteLine("5. List current borrowing movies");
                 WriteLine("6. Display the top 3 movies rented by the members");
                 WriteLine("0. Return to main menu");
-                Write("Enter your choice: ");
+                Write("Enter your choice:");
                 Option = GetOption(6);  // Maximum option is 6
                 // Handle member menu options...
                 switch (Option)
@@ -43,10 +43,10 @@ namespace N11422807
                         isExecute = false;
                         break;
                     case 1:
-                        WriteLine("Browsing all the movies...\n");
+                        WriteLine("\nBrowsing all the movies...\n");
                         // Header
-                        WriteLine("{0,-20} {1,-15} {2,-15} {3,-10} {4,-10}", "Title", "Genre", "Classification", "Duration", "Available Quantity");
-                        WriteLine("----------------------------------------------------------------------------------");
+                        WriteLine("{0,-25} {1,-15} {2,-15} {3,-10} {4,-10} {5,-10}", "Title", "Genre", "Classification", "Duration", "Avail. Qty", "Borrowed times");
+                        WriteLine("-----------------------------------------------------------------------------------------");
                         // Get all movies
                         Movie[] allMovies = movieCollection.GetAllMovies();
                         // Display movie info
@@ -54,7 +54,7 @@ namespace N11422807
                         {
                             if (movie != null)
                             {
-                                WriteLine("{0,-20} {1,-15} {2,-15} {3,-10} {4,-10}", movie.Title, movie.Genre, movie.Classification, movie.Duration, movie.Quantity);
+                                WriteLine("{0,-25} {1,-15} {2,-15} {3,-10} {4,-10} {5,-10}", movie.Title, movie.Genre, movie.Classification, movie.Duration, movie.Quantity, movie.BorrowingFrequency);
                             }
                         }
                         WriteLine("\n----------------------------------------");
@@ -63,17 +63,16 @@ namespace N11422807
                         break;
                     case 2:
                         // Display information about a movie
-                        Write("Enter the title of the movie: ");
+                        Write("\nEnter the title of the movie: ");
                         string titleToFind = ReadLine();
                         Movie foundMovie = movieCollection.GetMovie(titleToFind);
                         if (foundMovie != null)
                         {
                             // Header
-                            WriteLine("{0,-20} {1,-15} {2,-15} {3,-10} {4,-10}", "Title", "Genre", "Classification", "Duration", "Available Quantity");
-                            WriteLine("----------------------------------------------------------------------------------");
-
+                            WriteLine("{0,-25} {1,-15} {2,-15} {3,-10} {4,-10} {5,-10}", "Title", "Genre", "Classification", "Duration", "Avail. Qty", "Borrowed times");
+                            WriteLine("-----------------------------------------------------------------------------------------");
                             // Display movie info
-                            WriteLine("{0,-20} {1,-15} {2,-15} {3,-10} {4,-10}", foundMovie.Title, foundMovie.Genre, foundMovie.Classification, foundMovie.Duration, foundMovie.Quantity);
+                            WriteLine("{0,-25} {1,-15} {2,-15} {3,-10} {4,-10} {5,-10}", foundMovie.Title, foundMovie.Genre, foundMovie.Classification, foundMovie.Duration, foundMovie.Quantity, foundMovie.BorrowingFrequency);
                         }
                         else
                         {
@@ -84,26 +83,38 @@ namespace N11422807
                         ReadLine();
                         break;
                     case 3:
-                        WriteLine("Borrowing a movie DVD...");
-                        Write("Enter the title of the movie you want to borrow: ");
-                        string title = ReadLine();
-                        // Get the movie from the collection
-                        Movie movieToBorrow = movieCollection.GetMovie(title);
-                        if (movieToBorrow != null)
+                        WriteLine("\nBrowsing all the movies...\n");
+                        // Display movie list with numbers
+                        WriteLine("Movie List:");
+                        allMovies = movieCollection.GetAllMovies();
+                        for (int i = 0; i < allMovies.Length; i++)
                         {
-                            // Attempt to borrow the movie
-                            member.BorrowMovie(movieToBorrow);
+                            if (allMovies[i] != null)
+                            {
+                                WriteLine($"{i + 1}. {allMovies[i].Title}");
+                            }
+                        }
+
+                        // Prompt for movie selection
+                        Write("\nEnter the number of the movie you want to borrow: ");
+                        int movieNumber;
+                        if (int.TryParse(ReadLine(), out movieNumber) && movieNumber > 0 && movieNumber <= allMovies.Length)
+                        {
+                            // Get the selected movie from the array
+                            Movie selectedMovie = allMovies[movieNumber - 1];
+                            member.BorrowMovie(selectedMovie);
                         }
                         else
                         {
-                            WriteLine($"Sorry, '{title}' is not found in the library.");
+                            WriteLine("Invalid input. Please enter a valid movie number.");
                         }
+
                         WriteLine("\n----------------------------------------");
                         WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;
                     case 4:
-                        WriteLine("Returning a movie DVD...");
+                        WriteLine("\nReturning a movie DVD...");
                         Write("Enter the title of the movie you are returning:");
                         string movieTitle = ReadLine();
                         // Find the member in the collection
@@ -151,7 +162,7 @@ namespace N11422807
                         ReadLine();
                         break;
                     case 5:
-                        WriteLine("Listing current borrowing movies...");
+                        WriteLine("\nListing current borrowing movies...");
                         member = memberCollection.FindMember(member.FirstName, member.LastName);
                         if (member != null)
                         {
@@ -180,20 +191,36 @@ namespace N11422807
                         WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;
-                    case 6: //Todo
-                        // Display the top 3 movies rented by the members
-                        WriteLine("Displaying the top 3 movies rented by the members...");
-                        Movie[] topThreeMovies = movieCollection.GetTopThreeMovies();
+                    case 6:
+                        WriteLine("\nTop 3 movies rented by members:");
 
-                        WriteLine("Top 3 movies rented by members:");
-                        for (int i = 0; i < topThreeMovies.Length; i++)
+                        // Table header
+                        WriteLine("------------------------------------------------------------------------");
+                        WriteLine("|    No.   |               Title               |  Borrowing Frequency  |");
+                        WriteLine("------------------------------------------------------------------------");
+
+                        Movie[] topThreeMovies = movieCollection.GetTopThreeMovies();
+                        if (topThreeMovies.Length == 0)
                         {
-                            if (topThreeMovies[i] != null)
+                            WriteLine("|                           No movies rented yet                        |");
+                            WriteLine("------------------------------------------------------------------------");
+                        }
+                        else
+                        {
+                            for (int i = 0; i < 3; i++)
                             {
-                                WriteLine($"{i + 1}. {topThreeMovies[i].Title}");
+                                if (i < topThreeMovies.Length && topThreeMovies[i] != null)
+                                {
+                                    WriteLine($"|    {i + 1,-2}    |       {topThreeMovies[i].Title,-20}        |         {topThreeMovies[i].BorrowingFrequency,-5}         |");
+                                    WriteLine("------------------------------------------------------------------------");
+                                }
+                                else
+                                {
+                                    WriteLine($"|    {i + 1,-2}    |                -                  |            -           |");
+                                    WriteLine("------------------------------------------------------------------------");
+                                }
                             }
                         }
-                        WriteLine("\n----------------------------------------");
                         WriteLine("Press Enter to return to the member menu");
                         ReadLine();
                         break;

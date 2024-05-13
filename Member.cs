@@ -54,6 +54,7 @@ namespace N11422807
             {
                 // Update movie availability
                 movie.Quantity--;
+                movie.BorrowingFrequency++;
                 // Record borrowing details
                 BorrowingRecord record = new BorrowingRecord(movie.Title, this);
                 // Add the record to the member's borrowing history
