@@ -119,6 +119,11 @@ namespace N11422807
                                     break;
                                 }
                             }
+                            else if (result == 999)
+                            {
+                                WriteLine("The movie has been deleted.");
+                                isValid = false;
+                            }
                             else
                             {
                                 WriteLine($"Removed {numCopiesToRemove} copies. There are now {result} copies left.");
@@ -234,7 +239,7 @@ namespace N11422807
                             {
                                 if (record != null && record.MovieTitle == movieTitle)
                                 {
-                                    WriteLine($"{member.FirstName} {member.LastName} is currently renting '{movieTitle}'");
+                                    WriteLine($"{i +1}. {member.FirstName} {member.LastName}");
                                     found = true;
                                     break;
                                 }

@@ -1,21 +1,38 @@
 ﻿using System;
-using static System.Console;
+using System.Linq;
 
 namespace N11422807
 {
     public class MovieCollection
     {
-        private readonly Movie[] movies;
+        private class HashNode
+        {
+            public string Title { get; }
+            public Movie Movie { get; }
+            public HashNode Next { get; set; }
+
+            public HashNode(string title, Movie movie)
+            {
+                Title = title;
+                Movie = movie;
+                Next = null;
+            }
+        }
+
         private const int MaxMovies = 1000;
-        private const int EmptyIndex = -1; // Flag for empty slots
+        private HashNode[] hashTable;
+        private readonly Movie[] movies;
 
         public MovieCollection()
         {
+            hashTable = new HashNode[MaxMovies];
             movies = new Movie[MaxMovies];
             for (int i = 0; i < MaxMovies; i++)
             {
                 movies[i] = null; // Initialize all slots to empty
             }
+
+            // Add initial movies
             AddMovie(new Movie("IFN664", "Drama", "G", 2.5));
             AddMovie(new Movie("IFN664", "Drama", "G", 2.5));
             AddMovie(new Movie("IFN664", "Drama", "MG", 2.5));
@@ -27,203 +44,146 @@ namespace N11422807
 
         public bool AddMovie(Movie movie, int numCopies = 1)
         {
-            // Check if the collection is full
-            if (!Array.Exists(movies, element => element == null))
-            {
-                //Failed to add movie: The collection is full.
-                return false;
-            }
-
-            // Check if the movie already exists in the collection
             int index = GetHash(movie.Title);
-            while (movies[index] != null && movies[index].Title != movie.Title)
+            HashNode current = hashTable[index];
+
+            while (current != null)
             {
-                index = (index + 1) % MaxMovies; // Linear Probing
+                if (current.Title == movie.Title)
+                {
+                    // Movie already exists, update quantity
+                    current.Movie.Quantity += numCopies;
+                    UpdateMoviesArray(movie, 0);
+                    return true; // Updated quantity
+                }
+                current = current.Next;
             }
 
-            if (movies[index] == null)
-            {
-                // Movie doesn't exist, add it to the collection
-                movies[index] = new Movie(movie.Title, movie.Genre, movie.Classification, movie.Duration, numCopies);
-                return true;
-            }
-            else
-            {
-                // Movie already exists, update the quantity
-                movies[index].Quantity += numCopies;
-                WriteLine($"Added {numCopies} copies of '{movie.Title}'.");
-                return true;
-            }
+            // Movie not found in collision chain, add new node
+            HashNode newNode = new HashNode(movie.Title, movie);
+            newNode.Next = hashTable[index];
+            hashTable[index] = newNode;
+            UpdateMoviesArray(movie, numCopies);
+            return true; // Added successfully
         }
-
 
         public int RemoveMovie(string title, int numCopies)
         {
             int index = GetHash(title);
-            int probedIndex = index; // Keep track of original index for wrapping
+            HashNode current = hashTable[index];
+            HashNode previous = null;
 
-            while (movies[index] != null)
+            while (current != null)
             {
-                if (movies[index].Title == title)
+                if (current.Movie.Title == title)
                 {
-                    if (movies[index].Quantity < numCopies)
+                    if (current.Movie.Quantity < numCopies)
                     {
                         // Not enough copies to remove, return current quantity
-                        return movies[index].Quantity;
+                        return current.Movie.Quantity;
                     }
 
-                    movies[index].Quantity -= numCopies;
-                    if (movies[index].Quantity <= 0)
+                    current.Movie.Quantity -= numCopies;
+                    if (current.Movie.Quantity <= 0)
                     {
-                        movies[index] = null; // Mark slot as empty
+                        // Remove the node if all copies are removed
+                        if (previous == null)
+                        {
+                            // If it's the first node in the chain
+                            hashTable[index] = current.Next;
+                        }
+                        else
+                        {
+                            previous.Next = current.Next;
+                        }
+                        // If all copies are removed, delete the movie
+                        UpdateMoviesArray(current.Movie, -current.Movie.Quantity);
+                        return 999; // Indicate movie has been deleted
                     }
-                    return movies[index]?.Quantity ?? 0;
+                    else
+                    {
+                        UpdateMoviesArray(current.Movie, 0);
+                    }
+                    return current.Movie.Quantity; // Return updated quantity
                 }
-                index = (index + 1) % MaxMovies;
-                if (index == probedIndex) // Reached starting index, no movie found
-                {
-                    return 0;
-                }
+                previous = current;
+                current = current.Next;
             }
-
             return 0; // Movie not found
         }
+
+        private void UpdateMoviesArray(Movie movie, int numCopies)
+        {
+            for (int i = 0; i < movies.Length; i++)
+            {
+                if (movies[i] != null && movies[i].Title == movie.Title)
+                {
+                    movies[i].Quantity += numCopies;
+                    if (movies[i].Quantity <= 0)
+                    {
+                        // If all copies are removed, set the movie to null
+                        movies[i] = null;
+                    }
+                    return;
+                }
+            }
+            // If the movie is not found in the movies array and copies are being added
+            if (numCopies > 0)
+            {
+                for (int i = 0; i < movies.Length; i++)
+                {
+                    if (movies[i] == null)
+                    {
+                        movies[i] = movie;
+                        return;
+                    }
+                }
+            }
+        }
+
         public Movie GetMovie(string title)
         {
             int index = GetHash(title);
-            int probedIndex = index; // Keep track of original index for wrapping
-
-            while (movies[index] != null)
+            HashNode current = hashTable[index];
+            while (current != null)
             {
-                if (movies[index].Title == title)
+                if (current.Title == title)
                 {
-                    return movies[index];
+                    return current.Movie;
                 }
-                index = (index + 1) % MaxMovies;
-                if (index == probedIndex) // Reached starting index, no movie found
-                {
-                    return null;
-                }
+                current = current.Next;
             }
-            return null; // Movie not found
+            return null;
         }
 
         public Movie[] GetAllMovies()
         {
-            int count = 0;
-            string[] uniqueTitles = new string[MaxMovies]; // Array to store unique titles
+            return movies.Where(movie => movie != null).ToArray();
+        }
 
-            Movie[] allMovies = new Movie[MaxMovies];
-            for (int i = 0; i < MaxMovies; i++)
-            {
-                if (movies[i] != null)
-                {
-                    // Check if the title is unique
-                    bool isUnique = true;
-                    for (int j = 0; j < count; j++)
-                    {
-                        if (uniqueTitles[j] == movies[i].Title)
-                        {
-                            isUnique = false;
-                            break;
-                        }
-                    }
-
-                    if (isUnique)
-                    {
-                        // Add title to uniqueTitles array
-                        uniqueTitles[count] = movies[i].Title;
-                        count++;
-
-                        // Add movie to allMovies array
-                        allMovies[i] = movies[i];
-                    }
-                }
-            }
-            Array.Sort(allMovies, (movie1, movie2) =>
+        public Movie[] GetTopThreeMovies()
+        {
+            // Sort the movies by borrowing frequency
+            Array.Sort(movies, (movie1, movie2) =>
             {
                 if (movie1 == null && movie2 == null) return 0;
                 if (movie1 == null) return 1;
                 if (movie2 == null) return -1;
-                return movie1.Title.CompareTo(movie2.Title);
+                return movie2.Quantity.CompareTo(movie1.Quantity); // Descending order
             });
 
-            return allMovies;
+            // Get the top three movies
+            return movies.Take(3).ToArray();
         }
-        private int GetHash(string title) // Simple Hash Function
+
+        private int GetHash(string title)
         {
-            int sum = 0;
+            int hash = 0;
             foreach (char c in title)
             {
-                sum += (int)c;
+                hash = (hash * 31) + c; // Using a prime number for better distribution
             }
-            return sum % MaxMovies;
-        }
-
-        public bool BorrowMovie(string title, Member borrower)
-        {
-            Movie movie = GetMovie(title);
-            if (movie != null && movie.IsAvailable)
-            {
-                // Borrow the movie
-                borrower.BorrowMovie(movie);
-                return true;
-            }
-            else
-            {
-                WriteLine($"Sorry, '{title}' is not available for borrowing.");
-                return false;
-            }
-        }
-        public Movie[] GetTopThreeMovies() //TODO
-        {
-            // Array to store borrowing frequencies of each movie
-            int[] borrowingFrequencies = new int[movies.Length];
-
-            // Compute borrowing frequency for each movie
-            for (int i = 0; i < movies.Length; i++)
-            {
-                if (movies[i] != null)
-                {
-                    string title = movies[i].Title;
-                    int frequency = 0;
-                    for (int j = 0; j < movies.Length; j++)
-                    {
-                        if (movies[j] != null && movies[j].Title == title)
-                        {
-                            frequency++;
-                        }
-                    }
-                    borrowingFrequencies[i] = frequency;
-                }
-            }
-
-            // Sort borrowing frequencies in descending order (using bubble sort)
-            for (int i = 0; i < borrowingFrequencies.Length - 1; i++)
-            {
-                for (int j = 0; j < borrowingFrequencies.Length - i - 1; j++)
-                {
-                    if (borrowingFrequencies[j] < borrowingFrequencies[j + 1])
-                    {
-                        // Swap borrowing frequencies
-                        int temp = borrowingFrequencies[j];
-                        borrowingFrequencies[j] = borrowingFrequencies[j + 1];
-                        borrowingFrequencies[j + 1] = temp;
-
-                        // Swap corresponding movies
-                        Movie tempMovie = movies[j];
-                        movies[j] = movies[j + 1];
-                        movies[j + 1] = tempMovie;
-                    }
-                }
-            }
-            // Get the top three movies
-            Movie[] topThreeMovies = new Movie[3];
-            for (int i = 0; i < Math.Min(3, movies.Length); i++)
-            {
-                topThreeMovies[i] = movies[i];
-            }
-            return topThreeMovies;
+            return Math.Abs(hash) % MaxMovies; // Ensure a positive index within the array bounds
         }
     }
 }

@@ -30,7 +30,7 @@ namespace N11422807
 
         public override string ToString()
         {
-            return $"Name: {FirstName} {LastName}, Contact Number: {ContactNumber}, BorrowingHistory: {BorrowingHistory}\n";
+            return $"Name: {FirstName} {LastName}, Contact Number: {ContactNumber}, Borrowing movies: {BorrowingCount}\n";
         }
         public void BorrowMovie(Movie movie)
         {
