@@ -43,10 +43,11 @@ namespace N11422807
                         isExecute = false;
                         break;
                     case 1:
-                        WriteLine("\nBrowsing all the movies...\n");
+                        Clear();
+                        WriteLine("Browsing all the movies...\n");
                         // Header
-                        WriteLine("{0,-25} {1,-15} {2,-15} {3,-10} {4,-10} {5,-10}", "Title", "Genre", "Classification", "Duration", "Avail. Qty", "Borrowed times");
-                        WriteLine("-----------------------------------------------------------------------------------------");
+                        WriteLine("{0,-25} {1,-15} {2,-20} {3,-10} {4,-15} {5,-15}", "Title", "Genre", "Classification", "Duration", "Avail. Qty", "Borrowed times");
+                        WriteLine("---------------------------------------------------------------------------------------------------------");
                         // Get all movies
                         Movie[] allMovies = movieCollection.GetAllMovies();
                         // Display movie info
@@ -54,7 +55,7 @@ namespace N11422807
                         {
                             if (movie != null)
                             {
-                                WriteLine("{0,-25} {1,-15} {2,-15} {3,-10} {4,-10} {5,-10}", movie.Title, movie.Genre, movie.Classification, movie.Duration, movie.Quantity, movie.BorrowingFrequency);
+                                WriteLine("{0,-25} {1,-20} {2,-15} {3,-15} {4,-15} {5,-10}", movie.Title, movie.Genre, movie.Classification, movie.Duration, movie.Quantity, movie.BorrowingFrequency);
                             }
                         }
                         WriteLine("\n----------------------------------------");
@@ -69,10 +70,10 @@ namespace N11422807
                         if (foundMovie != null)
                         {
                             // Header
-                            WriteLine("{0,-25} {1,-15} {2,-15} {3,-10} {4,-10} {5,-10}", "Title", "Genre", "Classification", "Duration", "Avail. Qty", "Borrowed times");
-                            WriteLine("-----------------------------------------------------------------------------------------");
+                            WriteLine("{0,-25} {1,-15} {2,-20} {3,-10} {4,-15} {5,-15}", "Title", "Genre", "Classification", "Duration", "Avail. Qty", "Borrowed times");
+                            WriteLine("---------------------------------------------------------------------------------------------------------");
                             // Display movie info
-                            WriteLine("{0,-25} {1,-15} {2,-15} {3,-10} {4,-10} {5,-10}", foundMovie.Title, foundMovie.Genre, foundMovie.Classification, foundMovie.Duration, foundMovie.Quantity, foundMovie.BorrowingFrequency);
+                            WriteLine("{0,-25} {1,-20} {2,-15} {3,-15} {4,-15} {5,-10}", foundMovie.Title, foundMovie.Genre, foundMovie.Classification, foundMovie.Duration, foundMovie.Quantity, foundMovie.BorrowingFrequency);
                         }
                         else
                         {
@@ -83,7 +84,8 @@ namespace N11422807
                         ReadLine();
                         break;
                     case 3:
-                        WriteLine("\nBrowsing all the movies...\n");
+                        Clear();
+                        WriteLine("\nBorrow a movies...\n");
                         // Display movie list with numbers
                         WriteLine("Movie List:");
                         allMovies = movieCollection.GetAllMovies();

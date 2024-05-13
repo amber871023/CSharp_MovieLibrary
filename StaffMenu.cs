@@ -301,19 +301,32 @@ namespace N11422807
         }
 
         private string[] validGenres = { "drama", "adventure", "family", "action", "sci-fi", "comedy", "animated", "thriller", "Other" };
+
         private string GetValidGenre()
         {
-            WriteLine($"Enter movie genre{{{string.Join(", ", validGenres)}}} or (enter 'q' to quit): ");
-            string genre = ReadLine()?.ToLower(); // Added null-conditional operator to handle null input
+            WriteLine("Valid movie genres:");
+            for (int i = 0; i < validGenres.Length; i++)
+            {
+                WriteLine($"{i + 1}. {validGenres[i]}");
+            }
+            WriteLine("Enter the number corresponding to the movie genre from the list above or (enter 'q' to quit): ");
+
+            string input = ReadLine()?.Trim(); // Trim to remove any leading or trailing whitespace
+
             while (true)
             {
-                if (genre == "q") break; // Exit loop if 'q' is entered
-                if (validGenres.Contains(genre)) break; // Exit loop if a valid genre is entered
-                WriteLine("Invalid genre. Please enter a valid genre or 'q' to quit.");
-                Write("Enter movie genre: ");
-                genre = ReadLine()?.ToLower(); // Added null-conditional operator to handle null input
+                if (input == "q") break; // Exit loop if 'q' is entered
+                if (int.TryParse(input, out int selection) && selection >= 1 && selection <= validGenres.Length)
+                {
+                    // Check if the input is a valid number within the range
+                    return validGenres[selection - 1]; // Return the selected genre
+                }
+
+                WriteLine("Invalid input. Please enter a number corresponding to a genre from the list above or 'q' to quit.");
+                Write("Enter the number corresponding to the movie genre: ");
+                input = ReadLine()?.Trim(); // Read the input again
             }
-            return genre;
+            return input; 
         }
         private string[] validClassifications = { "G", "PG", "M15+", "MA15+" };
         private string GetValidClassification()
