@@ -54,7 +54,7 @@ public class Menu
             Write("Enter first name:");
             string firstName = ReadLine().Trim();
             Write("Enter last name:");
-            string lastName = ReadLine();
+            string? lastName = ReadLine();
             Write("Enter password:");
             string password = ReadPassword();
             // Check if the member exists and the password is correct
@@ -80,7 +80,7 @@ public class Menu
         string password = "";
         while (true)
         {
-            var key = ReadKey(true);
+            ConsoleKeyInfo key = ReadKey(true);
             // Backspace Should Not Work
             if (key.Key == ConsoleKey.Backspace && password.Length > 0)
             {

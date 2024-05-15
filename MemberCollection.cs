@@ -6,7 +6,7 @@ namespace Application
 {
     public class MemberCollection
     {
-        private const int MaxMembers = 1000;
+        private const int MaxMembers = 100;
         private Member[] members;
         private int count;
 

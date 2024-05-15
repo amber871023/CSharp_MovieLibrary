@@ -46,16 +46,17 @@ namespace N11422807
                         Clear();
                         WriteLine("Browsing all the movies...\n");
                         // Header
-                        WriteLine("{0,-25} {1,-15} {2,-20} {3,-10} {4,-15} {5,-15}", "Title", "Genre", "Classification", "Duration", "Avail. Qty", "Borrowed times");
-                        WriteLine("---------------------------------------------------------------------------------------------------------");
+                        WriteLine("{0,-5} {1,-25} {2,-15} {3,-20} {4,-10} {5,-15} {6,-15}", "No.", "Title", "Genre", "Classification", "Duration", "Avail. Qty", "Borrowed times");
+                        WriteLine("--------------------------------------------------------------------------------------------------------------");
                         // Get all movies
                         Movie[] allMovies = movieCollection.GetAllMovies();
                         // Display movie info
-                        foreach (Movie movie in allMovies)
+                        for (int i = 0; i < allMovies.Length; i++)
                         {
+                            Movie movie = allMovies[i];
                             if (movie != null)
                             {
-                                WriteLine("{0,-25} {1,-20} {2,-15} {3,-15} {4,-15} {5,-10}", movie.Title, movie.Genre, movie.Classification, movie.Duration, movie.Quantity, movie.BorrowingFrequency);
+                                WriteLine("{0,-5} {1,-25} {2,-20} {3,-15} {4,-15} {5,-15} {6,-10}", i + 1, movie.Title, movie.Genre, movie.Classification, movie.Duration, movie.Quantity, movie.BorrowingFrequency);
                             }
                         }
                         WriteLine("\n----------------------------------------");
@@ -65,8 +66,8 @@ namespace N11422807
                     case 2:
                         // Display information about a movie
                         Write("\nEnter the title of the movie: ");
-                        string titleToFind = ReadLine();
-                        Movie foundMovie = movieCollection.GetMovie(titleToFind);
+                        string? titleToFind = ReadLine();
+                        Movie foundMovie = movieCollection.SearchMovie(titleToFind);
                         if (foundMovie != null)
                         {
                             // Header
@@ -118,7 +119,7 @@ namespace N11422807
                     case 4:
                         WriteLine("\nReturning a movie DVD...");
                         Write("Enter the title of the movie you are returning:");
-                        string movieTitle = ReadLine();
+                        string? movieTitle = ReadLine();
                         // Find the member in the collection
                         Member foundMember = memberCollection.FindMember(member.FirstName, member.LastName);
                         if (foundMember != null)
@@ -129,7 +130,7 @@ namespace N11422807
                                 if (foundMember.BorrowingHistory[i] != null && foundMember.BorrowingHistory[i].MovieTitle == movieTitle)
                                 {
                                     // Get the returned movie directly from the movie collection
-                                    Movie returnedMovie = movieCollection.GetMovie(foundMember.BorrowingHistory[i].MovieTitle);
+                                    Movie returnedMovie = movieCollection.SearchMovie(foundMember.BorrowingHistory[i].MovieTitle);
                                     if (returnedMovie != null)
                                     {
                                         WriteLine("The movie you want to return is: ");
@@ -176,7 +177,7 @@ namespace N11422807
                             {
                                 if (member.BorrowingHistory[i] != null)
                                 {
-                                    Movie borrowedMovie = movieCollection.GetMovie(member.BorrowingHistory[i].MovieTitle);
+                                    Movie borrowedMovie = movieCollection.SearchMovie(member.BorrowingHistory[i].MovieTitle);
                                     if (borrowedMovie != null)
                                     {
                                         WriteLine($"|  {i + 1,-5}  |  {borrowedMovie.Title,-24}  |  {borrowedMovie.Genre,-16}  |  {borrowedMovie.Classification,-14}  |  {borrowedMovie.Duration,-10}  |");
@@ -213,12 +214,12 @@ namespace N11422807
                             {
                                 if (i < topThreeMovies.Length && topThreeMovies[i] != null)
                                 {
-                                    WriteLine($"|    {i + 1,-2}    |       {topThreeMovies[i].Title,-20}        |         {topThreeMovies[i].BorrowingFrequency,-5}         |");
+                                    WriteLine($"|    {i + 1,-2}    |       {topThreeMovies[i].Title,-20}        |            {topThreeMovies[i].BorrowingFrequency,-5}      |");
                                     WriteLine("------------------------------------------------------------------------");
                                 }
                                 else
                                 {
-                                    WriteLine($"|    {i + 1,-2}    |                -                  |            -           |");
+                                    WriteLine($"|    {i + 1,-2}    |                -                  |            -          |");
                                     WriteLine("------------------------------------------------------------------------");
                                 }
                             }

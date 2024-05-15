@@ -13,7 +13,7 @@ namespace N11422807
         public bool IsAvailable { get; set; }
         public int BorrowingFrequency { get; set; }
 
-        public Movie(string title, string genre, string classification, double duration, int quantity = 1)
+        public Movie(string title, string genre, string classification, double duration, int quantity)
         {
             Title = title;
             Genre = genre;
@@ -26,7 +26,7 @@ namespace N11422807
 
         public override string ToString()
         {
-            return $"Title: {Title}, Genre: {Genre}, Classification: {Classification}, Duration: {Duration} hrs \n";
+            return $"Title: {Title}, Genre: {Genre}, Classification: {Classification}, Duration: {Duration} hrs, Copies: {Quantity} \n";
         }
     }
 }

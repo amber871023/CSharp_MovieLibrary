@@ -54,7 +54,7 @@ namespace N11422807
                         Clear();
                         WriteLine("Adding Movies(DVDs)");
                         Write("Enter movie title (enter 'q' to quit): ");
-                        string title = ReadLine();
+                        string? title = ReadLine();
                         if (title.ToLower() == "q") break; // Exit if 'q' is entered
 
                         string genre = GetValidGenre();  // Get valid genre
@@ -63,39 +63,74 @@ namespace N11422807
                         string classification = GetValidClassification();  // Get valid classification
                         if (classification.ToLower() == "q") break; // Exit if 'q' is entered
 
-                        Write("Enter movie duration (enter 'q' to quit): ");
-                        double duration;
-                        string durationInput = ReadLine();
-                        if (durationInput.ToLower() == "q") break; // Exit if 'q' is entered
-
-                        while (!double.TryParse(durationInput, out duration) || duration <= 0)
+                        double duration = 0;
+                        string? durationInput;
+                        do
                         {
-                            WriteLine("Invalid duration. Please enter a positive number (enter 'q' to quit).");
-                            Write("Enter movie duration: ");
+                            Write("Enter movie duration (enter 'q' to quit): ");
                             durationInput = ReadLine();
                             if (durationInput.ToLower() == "q") break; // Exit if 'q' is entered
-                        }
+
+                            // Validate duration input
+                            while (!double.TryParse(durationInput, out duration) || duration <= 0)
+                            {
+                                if (durationInput == "0")
+                                {
+                                    WriteLine("Invalid duration. Duration cannot be zero.");
+                                }
+                                else
+                                {
+                                    WriteLine("Invalid duration. Please enter a positive number (enter 'q' to quit).");
+                                }
+                                Write("Enter movie duration: ");
+                                durationInput = ReadLine();
+                                if (durationInput.ToLower() == "q") break; // Exit if 'q' is entered
+                            }
+                        } while (durationInput == "0");
+
                         // Check if the user entered 'q' during duration input
                         if (durationInput.ToLower() != "q")
                         {
-                            Movie newMovie = new Movie(title, genre, classification, duration);
-                            bool isAdded = movieCollection.AddMovie(newMovie, 1);
-                            if (isAdded)
+                            int quantity;
+                            do
                             {
-                                WriteLine("Movie added successfully.");
-                            }
-                            else
-                            {
-                                WriteLine("Failed to add movie. The movie may already exist or the collection may be full.");
-                            }
+                                Write("Enter quantity (enter 'q' to quit): ");
+                                string? quantityInput = ReadLine();
+                                if (quantityInput.ToLower() == "q") break; // Exit if 'q' is entered
+
+                                // Validate quantity input
+                                while (!int.TryParse(quantityInput, out quantity) || quantity <= 0)
+                                {
+                                    WriteLine("Invalid quantity. Please enter a positive integer (enter 'q' to quit).");
+                                    Write("Enter quantity: ");
+                                    quantityInput = ReadLine();
+                                    if (quantityInput.ToLower() == "q") break; // Exit if 'q' is entered
+                                }
+
+                                // Check if the user entered 'q' during quantity input
+                                if (quantityInput.ToLower() != "q")
+                                {
+                                    Movie newMovie = new Movie(title, genre, classification, duration, quantity);
+                                    bool isAdded = movieCollection.AddMovie(newMovie);
+                                    if (isAdded)
+                                    {
+                                        WriteLine("\nMovie added successfully.");
+                                    }
+                                    else
+                                    {
+                                        WriteLine("\nMaximum capacity reached. Cannot add more movies.");
+                                    }
+                                }
+                            } while (quantity <= 0);
                         }
                         WriteLine("\n----------------------------------------");
                         WriteLine("Press Enter to return to the staff menu");
                         ReadLine();
                         break;
+
                     case 2:
                         WriteLine("\nEnter the title of the movie to remove: ");
-                        string titleToRemove = ReadLine();
+                        string? titleToRemove = ReadLine();
                         WriteLine("Enter the number of copies to remove: ");
                         int numCopiesToRemove;
                         if (!int.TryParse(ReadLine(), out numCopiesToRemove))
@@ -120,6 +155,7 @@ namespace N11422807
                                     WriteLine("Invalid input. Please enter a number.");
                                     break;
                                 }
+                                result = movieCollection.RemoveMovie(titleToRemove, numCopiesToRemove);
                             }
                             else if (result == 999)
                             {
@@ -276,7 +312,7 @@ namespace N11422807
             string password = "";
             while (true)
             {
-                var key = ReadKey(true);
+                ConsoleKeyInfo key = ReadKey(true);
                 // Backspace Should Not Work
                 if (key.Key == ConsoleKey.Backspace && password.Length > 0)
                 {
@@ -331,17 +367,27 @@ namespace N11422807
         private string[] validClassifications = { "G", "PG", "M15+", "MA15+" };
         private string GetValidClassification()
         {
-            WriteLine($"Enter movie classification{{{string.Join(", ", validClassifications)}}} or (enter 'q' to quit): ");
-            string classification;
-            classification = ReadLine()?.ToUpper(); // Added null-conditional operator to handle null input
+            WriteLine("Valid movie classifications:");
+            for (int i = 0; i < validClassifications.Length; i++)
+            {
+                WriteLine($"{i + 1}. {validClassifications[i]}");
+            }
+            WriteLine("Enter the number corresponding to the movie classification from the list above or (enter 'q' to quit): ");
+
+            string input = ReadLine()?.Trim(); // Trim to remove any leading or trailing whitespace
             while (true)
             {
-                if (classification == "Q") return "q"; // Exit loop if 'q' is entered
-                if (validClassifications.Contains(classification)) break; // Exit loop if a valid classification is entered
-                WriteLine("Invalid classification. Please enter a valid classification or 'q' to quit.");
-                Write("Enter movie classification: ");
+                if (input == "q") break; // Exit loop if 'q' is entered
+                if (int.TryParse(input, out int selection) && selection >= 1 && selection <= validClassifications.Length)
+                {
+                    // Check if the input is a valid number within the range
+                    return validClassifications[selection - 1]; // Return the selected classification
+                }
+                WriteLine("Invalid input. Please enter a number corresponding to a classification from the list above or 'q' to quit.");
+                Write("Enter the number corresponding to the movie classification: ");
+                input = ReadLine()?.Trim(); // Read the input again
             }
-            return classification;
+            return input;
         }
     }
 }

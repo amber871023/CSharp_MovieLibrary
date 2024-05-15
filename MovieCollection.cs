@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace N11422807
 {
@@ -27,24 +26,31 @@ namespace N11422807
         {
             hashTable = new HashNode[MaxMovies];
             movies = new Movie[MaxMovies];
-            for (int i = 0; i < MaxMovies; i++)
-            {
-                movies[i] = null; // Initialize all slots to empty
-            }
 
             // Add initial movies
-            AddMovie(new Movie("IFN664", "Drama", "G", 2.5));
-            AddMovie(new Movie("IFN664", "Drama", "G", 2.5));
-            AddMovie(new Movie("IFN664", "Drama", "G", 2.5));
-            AddMovie(new Movie("IFN666", "Crime", "M15+", 3));
-            AddMovie(new Movie("IFN711", "Action", "M15+", 5));
-            AddMovie(new Movie("IFN711", "Action", "M15+", 5));
-            AddMovie(new Movie("QUT", "Adventure", "MA15+", 10));
-            AddMovie(new Movie("Mission: Impossible", "Action", "PG", 2.5));
-            AddMovie(new Movie("Mission: Impossible 2", "Action", "PG", 2.5));
-            AddMovie(new Movie("Harry Potter", "fantasy", "PG", 2.5));
-            AddMovie(new Movie("Harry Potter", "fantasy", "PG", 2.5));
+            AddMovie(new Movie("IFN664", "Drama", "G", 2.5, 1));
+            AddMovie(new Movie("IFN664", "Drama", "G", 2.5, 2));
+            AddMovie(new Movie("IFN711", "Action", "M15+", 5, 2));
+            AddMovie(new Movie("QUT", "Adventure", "MA15+", 10, 1));
+            AddMovie(new Movie("Mission: Impossible", "Action", "PG", 2.5, 3));
+            AddMovie(new Movie("Mission: Impossible 2", "Action", "PG", 2.5, 3));
+            AddMovie(new Movie("Harry Potter", "Other", "PG", 2.5, 5));
+            AddMovie(new Movie("Harry Potter1", "Other", "PG", 2.5, 1));
+            AddMovie(new Movie("It", "thriller", "MA15+", 2, 2));
+            AddMovie(new Movie("Inception", "Sci-Fi", "PG", 2.5, 1));
+            AddMovie(new Movie("The Dark Knight", "Action", "PG", 2.5, 2));
+            AddMovie(new Movie("Pulp Fiction", "Other", "G", 3, 1));
+            AddMovie(new Movie("The Silence of the Lambs", "Thriller", "MA15+", 3, 1));
+            AddMovie(new Movie("The Godfather", "Other", "G", 5, 1));
+            AddMovie(new Movie("Forrest Gump", "Drama", "PG", 10, 1));
+            AddMovie(new Movie("The Matrix", "Sci-Fi", "R", 2.5, 3));
+            AddMovie(new Movie("The Incredibles", "Animated", "PG", 2.5, 1));
+            AddMovie(new Movie("Titanic", "Other", "PG", 2.5, 5));
+            AddMovie(new Movie("Avatar", "Action", "PG", 2.5, 1));
+            AddMovie(new Movie("Jurassic Park", "Adventure", "PG", 2.5, 3));
+            AddMovie(new Movie("The Avengers", "Action", "G", 2.5, 1));
         }
+
         private int GetHash(string title)
         {
             int hash = 0;
@@ -54,29 +60,64 @@ namespace N11422807
             }
             return Math.Abs(hash) % MaxMovies; // Ensure a positive index within the array bounds
         }
-        public bool AddMovie(Movie movie, int numCopies = 1)
+
+        public bool AddMovie(Movie movie)
         {
             int index = GetHash(movie.Title);
             HashNode current = hashTable[index];
+            HashNode previous = null;
 
+            // Check if the movie already exists in the collision chain
             while (current != null)
             {
                 if (current.Title == movie.Title)
                 {
                     // Movie already exists, update quantity
-                    current.Movie.Quantity += numCopies;
-                    UpdateMoviesArray(movie, 0);
+                    current.Movie.Quantity += movie.Quantity;
+                    UpdateMoviesArray(current.Movie, 0); // Update movies array with additional quantity
                     return true; // Updated quantity
                 }
+                previous = current;
                 current = current.Next;
             }
 
-            // Movie not found in collision chain, add new node
+            // Check if the capacity has been exceeded
+            if (GetTotalMoviesCount() >= MaxMovies)
+            {
+                return false;
+            }
+
+            // If the movie does not exist in the collision chain, add it
             HashNode newNode = new HashNode(movie.Title, movie);
-            newNode.Next = hashTable[index];
-            hashTable[index] = newNode;
-            UpdateMoviesArray(movie, numCopies);
+            if (previous == null)
+            {
+                // If it's the first node in the collision chain
+                hashTable[index] = newNode;
+            }
+            else
+            {
+                // Add the new node to the end of the collision chain
+                previous.Next = newNode;
+            }
+
+            // Update the movies array
+            UpdateMoviesArray(movie, movie.Quantity);
             return true; // Added successfully
+        }
+
+        private int GetTotalMoviesCount()
+        {
+            int count = 0;
+            foreach (HashNode node in hashTable)
+            {
+                HashNode current = node;
+                while (current != null)
+                {
+                    count++;
+                    current = current.Next;
+                }
+            }
+            return count;
         }
 
         public int RemoveMovie(string title, int numCopies)
@@ -96,6 +137,7 @@ namespace N11422807
                     }
 
                     current.Movie.Quantity -= numCopies;
+                    UpdateMoviesArray(current.Movie, 0); // Update movies array with removed quantity
                     if (current.Movie.Quantity <= 0)
                     {
                         // Remove the node if all copies are removed
@@ -108,13 +150,7 @@ namespace N11422807
                         {
                             previous.Next = current.Next;
                         }
-                        // If all copies are removed, delete the movie
-                        UpdateMoviesArray(current.Movie, -current.Movie.Quantity);
                         return 999; // Indicate movie has been deleted
-                    }
-                    else
-                    {
-                        UpdateMoviesArray(current.Movie, 0);
                     }
                     return current.Movie.Quantity; // Return updated quantity
                 }
@@ -153,7 +189,7 @@ namespace N11422807
             }
         }
 
-        public Movie GetMovie(string title)
+        public Movie SearchMovie(string title)
         {
             int index = GetHash(title);
             HashNode current = hashTable[index];
@@ -170,7 +206,29 @@ namespace N11422807
 
         public Movie[] GetAllMovies()
         {
-            return movies.Where(movie => movie != null).ToArray();
+            // Count non-null movies
+            int count = 0;
+            for (int i = 0; i < movies.Length; i++)
+            {
+                if (movies[i] != null)
+                {
+                    count++;
+                }
+            }
+
+            // Create a new array to store non-null movies
+            Movie[] allMovies = new Movie[count];
+            int index = 0;
+
+            // Copy non-null movies to the new array
+            for (int i = 0; i < movies.Length; i++)
+            {
+                if (movies[i] != null)
+                {
+                    allMovies[index++] = movies[i];
+                }
+            }
+            return allMovies;
         }
 
         public Movie[] GetTopThreeMovies()
@@ -224,7 +282,7 @@ namespace N11422807
                 {
                     if (movies[j].BorrowingFrequency < movies[j + 1].BorrowingFrequency)
                     {
-                        // Swap movies[j] and movies[j+1]
+                        // Swap movies[j] and movies[j + 1]
                         Movie temp = movies[j];
                         movies[j] = movies[j + 1];
                         movies[j + 1] = temp;
