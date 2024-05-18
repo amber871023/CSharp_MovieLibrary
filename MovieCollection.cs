@@ -18,7 +18,7 @@ namespace N11422807
             }
         }
 
-        private const int MaxMovies = 20;
+        private const int MaxMovies = 1000;
         private HashNode[] hashTable;
         private readonly Movie[] movies;
 
