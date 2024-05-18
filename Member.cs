@@ -34,11 +34,6 @@ namespace N11422807
         }
         public void BorrowMovie(Movie movie)
         {
-            if (BorrowingCount >= 5)
-            {
-                WriteLine("You have already borrowed the maximum number of movies.");
-                return;
-            }
 
             // Check if the member has already borrowed a copy of the same movie
             foreach (BorrowingRecord record in BorrowingHistory)
@@ -49,7 +44,11 @@ namespace N11422807
                     return;
                 }
             }
-
+            if (BorrowingCount >= 5)
+            {
+                WriteLine("You have already borrowed the maximum number of movies.You can only rent up to 5 movies.");
+                return;
+            }
             if (movie.Quantity > 0)
             {
                 // Update movie availability
@@ -66,7 +65,22 @@ namespace N11422807
                 WriteLine($"Sorry, '{movie.Title}' is not available for borrowing.");
             }
         }
-    }
+        public void ShiftBorrowingHistory()
+        {
+            int shiftIndex = 0;
+            for (int i = 0; i < BorrowingHistory.Length; i++)
+            {
+                if (BorrowingHistory[i] != null)
+                {
+                    BorrowingHistory[shiftIndex++] = BorrowingHistory[i];
+                }
+            }
 
+            for (int i = shiftIndex; i < BorrowingHistory.Length; i++)
+            {
+                BorrowingHistory[i] = null;
+            }
+        }
+    }
 }
 

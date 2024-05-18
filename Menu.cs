@@ -66,7 +66,7 @@ public class Menu
             }
             else
             {
-                WriteLine("Error: User does not exist or Incorrect password.");
+                WriteLine("Error: User does not exist or Incorrect password. If you haven't registered yet, please ask the staff to help register.");
                 ReadLine();
                 return false; // Member does not exist or password is incorrect, login failed
             }

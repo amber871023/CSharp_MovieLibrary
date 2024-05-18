@@ -14,6 +14,16 @@ namespace Application
         {
             members = new Member[MaxMembers];
             count = 0;
+            // AddMember for testing
+            AddMember(new Member("yiting", "cheng", "12345", "1234"));
+            AddMember(new Member("et", "cheng", "12345", "1234"));
+            AddMember(new Member("annie", "cheng", "12345", "1234"));
+            AddMember(new Member("tracy", "chiang", "12345", "1234"));
+            AddMember(new Member("injay", "cheng", "12345", "1234"));
+            AddMember(new Member("arin", "ning", "12345", "1234"));
+            AddMember(new Member("cody", "cheng", "12345", "1234"));
+            AddMember(new Member("jimin", "park", "12345", "1234"));
+            AddMember(new Member("amber", "cheng", "0412345678", "1234"));
         }
         public int Count
         {
@@ -21,19 +31,20 @@ namespace Application
         }
         public bool AddMember(Member member)
         {
-            if (count >= members.Length)
-            {
-                WriteLine("The collection is full.");
-                return false; // The collection is full
-            }
-
             // Check if the member already exists
             for (int i = 0; i < count; i++)
             {
                 if (members[i].FirstName == member.FirstName && members[i].LastName == member.LastName)
                 {
+                    Write("The member is already exist. ");
                     return false; // The member already exists
                 }
+            }
+            // Check if the collection is full
+            if (count >= members.Length)
+            {
+                Write("The collection is full. ");
+                return false; 
             }
 
             // Add the new member

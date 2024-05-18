@@ -215,14 +215,15 @@ namespace N11422807
                         }
                         else
                         {
-                            WriteLine("Failed to register member. The member may already exist or the collection may be full.");
+                            WriteLine("Failed to register member.");
                         }
                         WriteLine("\n----------------------------------------");
                         WriteLine("Press Enter to return to the staff menu");
                         ReadLine();
                         break;
                     case 4:
-                        WriteLine("\n - Remove a member -");
+                        Clear();
+                        WriteLine(" - Remove a member -");
                         Write("Enter first name:");
                         firstName = ReadLine().Trim();
                         Write("Enter last name:");
@@ -241,12 +242,12 @@ namespace N11422807
                             }
                             if (hasBorrowed)
                             {
-                                WriteLine("This member is currently holding some DVDs.\n They must return all DVDs before they can be removed from the system. \nPress Enter to return to the staff menu");
+                                WriteLine("This member is currently holding some DVDs.\nThey must return all DVDs before they can be removed from the system.");
                             }
                             else
                             {
                                 memberCollection.RemoveMember(memberToRemove);
-                                WriteLine($"Member {memberToRemove}has been successfully removed. \nPress Enter to return to the staff menu");
+                                WriteLine($"\nMember {memberToRemove}\nThis member has been successfully removed.");
                             }
                         }
                         else
@@ -266,7 +267,7 @@ namespace N11422807
                         Member foundMemberPhone = memberCollection.FindMember(firstName, lastName);
                         if (foundMemberPhone != null)
                         {
-                            WriteLine($"Found member:\n {firstName} {lastName}, Contact Number: {foundMemberPhone.ContactNumber}");
+                            WriteLine($"\n***Found member***\n {firstName} {lastName}, Contact Number: {foundMemberPhone.ContactNumber}");
                         }
                         else
                         {
@@ -277,10 +278,11 @@ namespace N11422807
                         ReadLine();
                         break;
                     case 6:
-                        WriteLine("Enter the title of the movie:");
-                        string movieTitle = ReadLine();
+                        Clear();
+                        WriteLine("Find all the members who are currently renting a particular movie...");
+                        Write("Enter the title of the movie:");
+                        string movieTitle = ReadLine().Trim();
                         WriteLine($"Finding members who are currently renting '{movieTitle}'...");
-
                         bool found = false;
                         for (int i = 0; i < memberCollection.Count; i++)
                         {
@@ -289,7 +291,7 @@ namespace N11422807
                             {
                                 if (record != null && record.MovieTitle == movieTitle)
                                 {
-                                    WriteLine($"{i +1}. {member.FirstName} {member.LastName}");
+                                    WriteLine($"---  {member.FirstName} {member.LastName}  ---");
                                     found = true;
                                     break;
                                 }

@@ -18,7 +18,7 @@ namespace N11422807
             }
         }
 
-        private const int MaxMovies = 1000;
+        private const int MaxMovies = 20;
         private HashNode[] hashTable;
         private readonly Movie[] movies;
 
@@ -28,10 +28,6 @@ namespace N11422807
             movies = new Movie[MaxMovies];
 
             // Add initial movies
-            AddMovie(new Movie("IFN664", "Drama", "G", 2.5, 1));
-            AddMovie(new Movie("IFN664", "Drama", "G", 2.5, 2));
-            AddMovie(new Movie("IFN711", "Action", "M15+", 5, 2));
-            AddMovie(new Movie("QUT", "Adventure", "MA15+", 10, 1));
             AddMovie(new Movie("Mission: Impossible", "Action", "PG", 2.5, 3));
             AddMovie(new Movie("Mission: Impossible 2", "Action", "PG", 2.5, 3));
             AddMovie(new Movie("Harry Potter", "Other", "PG", 2.5, 5));
@@ -49,6 +45,9 @@ namespace N11422807
             AddMovie(new Movie("Avatar", "Action", "PG", 2.5, 1));
             AddMovie(new Movie("Jurassic Park", "Adventure", "PG", 2.5, 3));
             AddMovie(new Movie("The Avengers", "Action", "G", 2.5, 1));
+            AddMovie(new Movie("IFN664", "Other", "G", 2.5, 1));
+            AddMovie(new Movie("IFN664", "Other", "G", 2.5, 2));
+            AddMovie(new Movie("IFN711", "Other", "M15+", 5, 2));
         }
 
         private int GetHash(string title)
@@ -59,7 +58,7 @@ namespace N11422807
                 hash = (hash * 31) + c; // Using a prime number for better distribution
             }
             return Math.Abs(hash) % MaxMovies; // Ensure a positive index within the array bounds
-        }
+        }    
 
         public bool AddMovie(Movie movie)
         {
@@ -206,7 +205,7 @@ namespace N11422807
 
         public Movie[] GetAllMovies()
         {
-            // Count non-null movies
+            // Filter out null movies and count non-null movies
             int count = 0;
             for (int i = 0; i < movies.Length; i++)
             {
@@ -228,26 +227,39 @@ namespace N11422807
                     allMovies[index++] = movies[i];
                 }
             }
+
+            // Sort the array by movie title using bubble sort
+            for (int i = 0; i < allMovies.Length - 1; i++)
+            {
+                for (int j = 0; j < allMovies.Length - i - 1; j++)
+                {
+                    if (string.Compare(allMovies[j].Title, allMovies[j + 1].Title) > 0)
+                    {
+                        Movie temp = allMovies[j];
+                        allMovies[j] = allMovies[j + 1];
+                        allMovies[j + 1] = temp;
+                    }
+                }
+            }
             return allMovies;
         }
-
         public Movie[] GetTopThreeMovies()
         {
+            // Flatten the hash table from the movie collection and get all movies
             Movie[] allMovies = FlattenHashTable();
-            BubbleSortByBorrowingFrequency(allMovies);
-
             // Filter out movies with borrowing frequency <= 0
             allMovies = allMovies.Where(movie => movie.BorrowingFrequency > 0).ToArray();
-            // Get the top three movies
-            int length = Math.Min(3, allMovies.Length);
-            Movie[] topThreeMovies = new Movie[length];
-            Array.Copy(allMovies, topThreeMovies, length);
+            // Sort the movies by borrowing frequency in descending order
+            QuickSortByBorrowingFrequency(allMovies, 0, allMovies.Length - 1);
+            // Get the top three movies with non-zero borrowing frequency
+            Movie[] topThreeMovies = allMovies.Take(3).ToArray();
+
             return topThreeMovies;
         }
-
+        // Flatten the hash table to get all movies
         private Movie[] FlattenHashTable()
         {
-            // Flatten the hash table
+            // Count the total number of movies
             int count = 0;
             foreach (HashNode node in hashTable)
             {
@@ -259,8 +271,11 @@ namespace N11422807
                 }
             }
 
+            // Create an array to store all movies
             Movie[] allMovies = new Movie[count];
             int index = 0;
+
+            // Fill the array with movies
             foreach (HashNode node in hashTable)
             {
                 HashNode current = node;
@@ -270,25 +285,46 @@ namespace N11422807
                     current = current.Next;
                 }
             }
+
             return allMovies;
         }
 
-        private void BubbleSortByBorrowingFrequency(Movie[] movies)
+        private void QuickSortByBorrowingFrequency(Movie[] movies, int left, int right)
         {
-            int n = movies.Length;
-            for (int i = 0; i < n - 1; i++)
+            if (left < right)
             {
-                for (int j = 0; j < n - i - 1; j++)
+                // Partition the array
+                int pivotIndex = Partition(movies, left, right);
+
+                // Recursively sort the sub-arrays
+                QuickSortByBorrowingFrequency(movies, left, pivotIndex - 1);
+                QuickSortByBorrowingFrequency(movies, pivotIndex + 1, right);
+            }
+        }
+
+        private int Partition(Movie[] movies, int left, int right)
+        {
+            Movie pivot = movies[right];
+            int i = left;
+
+            for (int j = left; j < right; j++)
+            {
+                if (movies[j].BorrowingFrequency > pivot.BorrowingFrequency)
                 {
-                    if (movies[j].BorrowingFrequency < movies[j + 1].BorrowingFrequency)
-                    {
-                        // Swap movies[j] and movies[j + 1]
-                        Movie temp = movies[j];
-                        movies[j] = movies[j + 1];
-                        movies[j + 1] = temp;
-                    }
+                    // Swap movies[i] and movies[j]
+                    Movie temp = movies[i];
+                    movies[i] = movies[j];
+                    movies[j] = temp;
+                    i++;
                 }
             }
+
+            // Swap movies[i] and movies[right] (pivot)
+            Movie tempPivot = movies[i];
+            movies[i] = movies[right];
+            movies[right] = tempPivot;
+
+            return i;
         }
     }
 }

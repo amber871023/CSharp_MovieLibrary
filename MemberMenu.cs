@@ -15,7 +15,7 @@ namespace N11422807
         {
             this.movieCollection = movieCollection;
             this.memberCollection = memberCollection;
-            this.member = member; 
+            this.member = member;
         }
         public int DisplayMemberMenu()
         {
@@ -86,7 +86,8 @@ namespace N11422807
                         break;
                     case 3:
                         Clear();
-                        WriteLine("\nBorrow a movies...\n");
+                        WriteLine("Borrow a movies...");
+                        WriteLine("--------------------------------------------------");
                         // Display movie list with numbers
                         WriteLine("Movie List:");
                         allMovies = movieCollection.GetAllMovies();
@@ -139,8 +140,10 @@ namespace N11422807
                                         returnedMovie.Quantity++;
                                         // Remove the movie from the member's borrowing history
                                         foundMember.BorrowingHistory[i] = null;
+                                        // Shift borrowing history to fill the gap
+                                        foundMember.ShiftBorrowingHistory();
                                         foundMember.BorrowingCount--;
-
+                                        //ShiftBorrowingHistory(foundMember);
                                         WriteLine($"Successfully returned '{movieTitle}'. Thank you!");
                                         movieReturned = true;
                                         break;
@@ -198,15 +201,15 @@ namespace N11422807
                         WriteLine("\nTop 3 movies rented by members:");
 
                         // Table header
-                        WriteLine("------------------------------------------------------------------------");
-                        WriteLine("|    No.   |               Title               |  Borrowing Frequency  |");
-                        WriteLine("------------------------------------------------------------------------");
+                        WriteLine("----------------------------------------------------------------------------------");
+                        WriteLine("|    No.   |                    Title                    |  Borrowing Frequency  |");
+                        WriteLine("----------------------------------------------------------------------------------");
 
                         Movie[] topThreeMovies = movieCollection.GetTopThreeMovies();
                         if (topThreeMovies.Length == 0)
                         {
-                            WriteLine("|                           No movies rented yet                        |");
-                            WriteLine("------------------------------------------------------------------------");
+                            WriteLine("|                                No movies rented yet                            |");
+                            WriteLine("----------------------------------------------------------------------------------");
                         }
                         else
                         {
@@ -214,13 +217,13 @@ namespace N11422807
                             {
                                 if (i < topThreeMovies.Length && topThreeMovies[i] != null)
                                 {
-                                    WriteLine($"|    {i + 1,-2}    |       {topThreeMovies[i].Title,-20}        |            {topThreeMovies[i].BorrowingFrequency,-5}      |");
-                                    WriteLine("------------------------------------------------------------------------");
+                                    WriteLine($"|    {i + 1,-2}    |       {topThreeMovies[i].Title,-30}        |            {topThreeMovies[i].BorrowingFrequency,-5}      |");
+                                    WriteLine("----------------------------------------------------------------------------------");
                                 }
                                 else
                                 {
-                                    WriteLine($"|    {i + 1,-2}    |                -                  |            -          |");
-                                    WriteLine("------------------------------------------------------------------------");
+                                    WriteLine($"|    {i + 1,-2}    |                     -                       |            -          |");
+                                    WriteLine("----------------------------------------------------------------------------------");
                                 }
                             }
                         }
